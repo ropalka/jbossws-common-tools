@@ -65,9 +65,11 @@ import java.util.List;
  * </pre>
  *
  * @author <a href="mailto:jason.greene@jboss.com">Jason T. Greene</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WSConsume
 {
+   private ClassLoader loader = WSConsume.class.getClassLoader();
    private List<File> bindingFiles = new ArrayList<File>();
    private File outputDir = new File("output");
    private boolean generateSource;
@@ -88,20 +90,6 @@ public class WSConsume
    public static final String PROGRAM_NAME = SecurityActions.getSystemProperty("program.name", WSConsume.class.getName());
 
    public static void main(String[] args)
-   {
-       final ClassLoader origLoader = SecurityActions.getContextClassLoader();
-       try
-       {
-           SecurityActions.setContextClassLoader(WSConsume.class.getClassLoader());
-           mainInternal(args);
-       }
-       finally
-       {
-           SecurityActions.setContextClassLoader(origLoader);
-       }
-   }
-   
-   private static void mainInternal(final String[] args)
    {
        WSConsume importer = new WSConsume();
        URL wsdl = importer.parseArguments(args);
@@ -197,7 +185,7 @@ public class WSConsume
       // debug output
       if(loadConsumer)
       {
-         WSContractConsumer importer = WSContractConsumer.newInstance();
+         WSContractConsumer importer = WSContractConsumer.newInstance(loader);
          System.out.println("WSContractConsumer instance: " + importer.getClass().getCanonicalName());
          System.exit(0);
       }
@@ -235,7 +223,7 @@ public class WSConsume
 
    private int importServices(URL wsdl)
    {
-      WSContractConsumer consumer = WSContractConsumer.newInstance();
+      WSContractConsumer consumer = WSContractConsumer.newInstance(loader);
 
       consumer.setGenerateSource(generateSource);
       consumer.setOutputDirectory(outputDir);
